@@ -13,15 +13,14 @@ public class Courier {
         this.firstName = firstName;
     }
 
-
     public Courier() {
     }
 
     public static Courier getRandomCourier(){
-    String login = RandomStringUtils.randomAlphabetic(10);
-    String password = RandomStringUtils.randomAlphabetic(12);
-    String firstName = RandomStringUtils.randomAlphabetic(8);
-    return new Courier(login, password, firstName);
+        String login = RandomStringUtils.randomAlphabetic(10);
+        String password = RandomStringUtils.randomAlphabetic(12);
+        String firstName = RandomStringUtils.randomAlphabetic(8);
+        return new Courier(login, password, firstName);
     }
 
     public static Courier getRandomCourierLogin(){

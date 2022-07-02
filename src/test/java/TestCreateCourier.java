@@ -1,18 +1,12 @@
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
+import model.BaseAPI;
 import model.Courier;
-import model.CourierCredentials;
 import org.junit.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import static io.restassured.RestAssured.*;
-import static model.CourierClient.*;
 import static org.apache.http.HttpStatus.*;
 import static org.junit.Assert.*;
 
@@ -23,216 +17,87 @@ public class TestCreateCourier {
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = BaseAPI.baseUrl;
     }
 
     @After
-    public void Clear()
-    {
-        System.out.println("Clear started");
-        for(int i = 0; i < couriers.size(); i++) {
-
-            System.out.println("Clear courier " + i + " started");
-
-            Courier courier = couriers.get(i);
-
-            CourierCredentials courierCredentials = new CourierCredentials(courier.getLogin(), courier.getPassword());
-            ExtractableResponse<Response> response = given()
-                    .log().all()
-                    .contentType(ContentType.JSON)
-                    .body(courierCredentials)
-                    .when()
-                    .post("/api/v1/courier/login")
-                    .then()
-                    .assertThat()
-                    .log().all()
-                    .extract();
-
-            int statusCode = response.statusCode();
-            boolean isCourierCreated = statusCode == SC_OK;
-            if(isCourierCreated)
-            {
-                int courierId = response.path("id");
-                given()
-                        .spec(getRecSpec())
-                        .when()
-                        .delete(baseURL + "/api/v1/courier/"+courierId);
-            }
-        }
-
-        couriers.clear();
-    }
-
-    @Test
-    @DisplayName("CheckCreateCourierPositive")
-    public void CheckCreateCourierPositive() {
-        Courier courier = Courier.getRandomCourier();
-        couriers.add(courier);
-
-        boolean ok = given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courier)
-                .when()
-                .post("/api/v1/courier")
-                .then()
-                .assertThat()
-                .log().all()
-                .statusCode(SC_CREATED)
-                .extract()
-                .path("ok");
-
-        assertTrue(ok);
+    public void clear() {
+        BaseAPI.deleteCouriers(couriers);
     }
 
     @Test
     @DisplayName("CheckCreateCourierWithSameCredentials")
-    public void CheckCreateCourierWithSameCredentials() {
-            Courier courier = Courier.getRandomCourier();
-            couriers.add(courier);
+    public void checkCreateCourierWithSameCredentials() {
+        Courier courier = Courier.getRandomCourier();
 
-            given()
-            .log().all()
-            .contentType(ContentType.JSON)
-            .body(courier)
-            .when()
-            .post("/api/v1/courier")
-            .then()
-            .assertThat()
-            .log().all()
-            .statusCode(SC_CREATED)
-            .extract()
-            .path("ok");
+        createCourierRequest(courier);
+        Response response = createCourierRequest(courier);
 
-    String messageResult =  given()
-            .log().all()
-            .contentType(ContentType.JSON)
-            .body(courier)
-            .when()
-            .post("/api/v1/courier")
-            .then()
-            .assertThat()
-            .log().all()
-            .statusCode(SC_CONFLICT)
-            .extract()
-            .path("message");
-    //Здесь баг, ответ , который приходит ""Этот логин уже используется. Используйте другой""
+        BaseAPI.assertResponseStatusCode(response, SC_CONFLICT);
+
+        // Здесь баг, ответ , который приходит ""Этот логин уже используется. Используйте другой""
+        // Я не могу поменять тест, это неправильно с точки зрения тестирования.
+        // Это будет подстраивание под результат теста, а не тест по требованиям.
+        // Наставник отвечал уже нам, что этом тесте падает ошибка
+        String messageResult = response.path("message");
         assertEquals("Этот логин уже используется", messageResult);
     }
 
     @Test
     @DisplayName("CheckCreateCourierWrightStatusCode")
-    public void CheckCreateCourierWrightStatusCode() {
+    public void checkCreateCourierWrightStatusCode() {
         Courier courier = Courier.getRandomCourier();
-        couriers.add(courier);
 
-        given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courier)
-                .when()
-                .post("/api/v1/courier")
-                .then()
-                .assertThat()
-                .log().all()
-                .statusCode(SC_CREATED);
+        Response response = createCourierRequest(courier);
 
+        BaseAPI.assertResponseStatusCode(response, SC_CREATED);
     }
 
     @Test
     @DisplayName("CheckCreateCourierWrightResponse")
-    public void CheckCreateCourierWrightResponse() {
+    public void checkCreateCourierWrightResponse() {
         Courier courier = Courier.getRandomCourier();
-        couriers.add(courier);
 
-        boolean ok = given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courier)
-                .when()
-                .post("/api/v1/courier")
-                .then()
-                .log().all()
-                .extract()
-                .path("ok");
+        Response response = createCourierRequest(courier);
 
+        boolean ok = response.path("ok");
         assertTrue(ok);
     }
 
     @Test
     @DisplayName("CheckCreateCourierOnlyRequiredField")
-    public void CheckCreateCourierOnlyRequiredField() {
+    public void checkCreateCourierOnlyRequiredField() {
         Courier courier = Courier.getRandomCourierLoginAndPassword();
-        couriers.add(courier);
 
-        boolean ok = given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courier)
-                .when()
-                .post("/api/v1/courier")
-                .then()
-                .assertThat()
-                .log().all()
-                .statusCode(SC_CREATED)
-                .extract()
-                .path("ok");
+        Response response = createCourierRequest(courier);
+        BaseAPI.assertResponseStatusCode(response, SC_CREATED);
 
+        boolean ok = response.path("ok");
         assertTrue(ok);
     }
 
     @Test
     @DisplayName("CheckCreateCourierWithoutRequiredFields")
-    public void CheckCreateCourierWithoutRequiredFields() {
+    public void checkCreateCourierWithoutRequiredFields() {
         Courier courierFirst = Courier.getRandomCourierLogin();
-        couriers.add(courierFirst);
 
-        String messageResultOnlyLogin = given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courierFirst)
-                .when()
-                .post("/api/v1/courier")
-                .then()
-                .assertThat()
-                .log().all()
-                .statusCode(SC_BAD_REQUEST)
-                .extract()
-                .path("message");
+        Response response = createCourierRequest(courierFirst);
+        BaseAPI.assertResponseStatusCode(response, SC_BAD_REQUEST);
 
-        System.out.println("11111");
+        String messageResultOnlyLogin = response.path("message");
         assertEquals("Недостаточно данных для создания учетной записи", messageResultOnlyLogin);
 
         Courier courierSecond = Courier.getRandomCourierPassword();
-        couriers.add(courierSecond);
-        String messageResultOnlyPassword = given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courierSecond)
-                .when()
-                .post("/api/v1/courier")
-                .then()
-                .assertThat()
-                .log().all()
-                .statusCode(SC_BAD_REQUEST)
-                .extract()
-                .path("message");
 
-        System.out.println("222222");
+        response = createCourierRequest(courierSecond);
+        BaseAPI.assertResponseStatusCode(response, SC_BAD_REQUEST);
+
+        String messageResultOnlyPassword = response.path("message");
         assertEquals("Недостаточно данных для создания учетной записи", messageResultOnlyPassword);
-        System.out.println("33333");
     }
 
-  /*  @After
-    public Boolean deleteCouriersData(int id) {
-        given()
-                .log().all()
-                .delete("/api/v1/courier/"+id)
-                .then()
-                .assertThat()
-                .log().all()
-                .statusCode(SC_OK)
-                .extract()
-                .path("ok");
-    }*/
+    private Response createCourierRequest(Courier courier) {
+        couriers.add(courier);
+        return BaseAPI.postCourier(courier);
+    }
 }

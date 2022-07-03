@@ -40,7 +40,7 @@ public class TestCreateCourier {
         // Это будет подстраивание под результат теста, а не тест по требованиям.
         // Наставник отвечал уже нам, что этом тесте падает ошибка.
         String messageResult = response.path("message");
-        assertEquals("Этот логин уже используется", messageResult);
+        assertEquals("Этот логин уже используется. Попробуйте другой.", messageResult);
     }
 
     @Test

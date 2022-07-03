@@ -16,7 +16,7 @@ public class TestListOfOrders {
 
     @Test
     @DisplayName("CheckReturnBasicListOfOrder")
-    public void CheckReturnBasicListOfOrder() {
+    public void checkReturnBasicListOfOrder() {
         Response response = BaseAPI.getOrders();
         BaseAPI.assertResponseStatusCode(response, SC_OK);
 

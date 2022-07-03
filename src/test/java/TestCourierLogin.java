@@ -29,7 +29,7 @@ public class TestCourierLogin {
     @Test
     @DisplayName("CheckLoginCourierPositive")
     public void checkLoginCourierPositive() {
-        Courier courier = CreateRandomCourier();
+        Courier courier = createRandomCourier();
 
         Response response = BaseAPI.postLoginByCourier(courier);
         BaseAPI.assertResponseStatusCode(response, SC_OK);
@@ -41,7 +41,7 @@ public class TestCourierLogin {
     @Test
     @DisplayName("CheckLoginCourierWithoutRequiredFieldPassword")
     public void checkLoginCourierWithoutRequiredFieldPassword() {
-        Courier courier = CreateRandomCourier();
+        Courier courier = createRandomCourier();
 
         Response response = BaseAPI.postLoginByLoginAndPassword(courier.getLogin(), "");
         BaseAPI.assertResponseStatusCode(response, SC_BAD_REQUEST);
@@ -53,7 +53,7 @@ public class TestCourierLogin {
     @Test
     @DisplayName("CheckLoginCourierWithoutRequiredFieldLogin")
     public void checkLoginCourierWithoutRequiredFieldLogin() {
-        Courier courier = CreateRandomCourier();
+        Courier courier = createRandomCourier();
 
         Response response = BaseAPI.postLoginByLoginAndPassword("", courier.getPassword());
         BaseAPI.assertResponseStatusCode(response, SC_BAD_REQUEST);
@@ -75,7 +75,7 @@ public class TestCourierLogin {
     @Test
     @DisplayName("CheckLoginCourierWithErrorInPassword")
     public void checkLoginCourierWithErrorInPassword() {
-        Courier courier = CreateRandomCourier();
+        Courier courier = createRandomCourier();
 
         Response response = BaseAPI.postLoginByLoginAndPassword(courier.getLogin(), courier.getPassword() + "x");
         BaseAPI.assertResponseStatusCode(response, SC_NOT_FOUND);
@@ -87,7 +87,7 @@ public class TestCourierLogin {
     @Test
     @DisplayName("CheckLoginCourierWithErrorInLogin")
     public void checkLoginCourierWithErrorInLogin() {
-        Courier courier = CreateRandomCourier();
+        Courier courier = createRandomCourier();
 
         Response response = BaseAPI.postLoginByLoginAndPassword(courier.getLogin() + "x", courier.getPassword());
         BaseAPI.assertResponseStatusCode(response, SC_NOT_FOUND);
@@ -96,7 +96,7 @@ public class TestCourierLogin {
         assertEquals("Учетная запись не найдена", messageResult);
     }
 
-    private Courier CreateRandomCourier() {
+    private Courier createRandomCourier() {
         Courier courier = Courier.getRandomCourier();
         couriers.add(courier);
         BaseAPI.postCourier(courier);

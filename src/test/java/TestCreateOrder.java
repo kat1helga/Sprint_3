@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestCreateOrder {
     @Before
@@ -22,6 +24,7 @@ public class TestCreateOrder {
         BaseAPI.assertResponseStatusCode(response, SC_CREATED);
 
         Integer track = response.path("track");
+        assertThat(track,notNullValue());
         System.out.println(track);
     }
 
